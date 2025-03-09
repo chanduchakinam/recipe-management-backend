@@ -9,4 +9,4 @@ const RecipeSchema = new mongoose.Schema({
     order: { type: Number, required: true },
 });
 
-module.exports = mongoose.model("Recipe", RecipeSchema);
+module.exports = mongoose.model("Recipe", RecipeSchema, "recipes");

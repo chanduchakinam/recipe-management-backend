@@ -7,12 +7,17 @@ const router = express.Router();
 // GET all recipes
 router.get("/", async (req, res) => {
     try {
-        const recipes = await Recipe.find();
+        let filter = {};
+        if (req.query.category) {
+            filter = { category: req.query.category };
+        }
+        const recipes = await Recipe.find(filter).sort({ order: 1 });
         res.json(recipes);
     } catch (error) {
         res.status(500).json({ message: "Server Error" });
     }
 });
+
 
 // GET a single recipe
 router.get("/:id", async (req, res) => {
@@ -29,23 +34,44 @@ router.get("/:id", async (req, res) => {
 
 
 // POST a new recipe
+// router.post(
+//     "/",
+//     [body("title").notEmpty(), body("ingredients"), body("instructions").notEmpty()],
+//     async (req, res) => {
+//         const errors = validationResult(req);
+//         if (!errors.isEmpty()) {
+//             console.log(errors);
+//             return res.status(400).json({ message: "Invalid input" });
+//         }
+//         console.log(req.body);
+//         try {
+//             const recipe = new Recipe(req.body);
+//             const result = await recipe.save();
+//             console.log(result);
+//             res.status(201).json(recipe);
+//         } catch (error) {
+//             res.status(500).json({ message: "Error creating recipe" });
+//         }
+//     }
+// );
+
 router.post(
     "/",
-    [body("title").notEmpty(), body("ingredients"), body("instructions").notEmpty()],
     async (req, res) => {
-        // const errors = validationResult(req);
-        // if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-        console.log(req.body);
-        try {
-            const recipe = new Recipe(req.body);
-            const result = await recipe.save();
-            console.log(result);
-            res.status(201).json(recipe);
-        } catch (error) {
-            res.status(500).json({ message: "Error creating recipe" });
-        }
+      console.log("📥 Received POST request:", req.body); // ✅ Log request body
+  
+      try {
+        const recipe = new Recipe(req.body);
+        const result = await recipe.save();
+        console.log("✅ Recipe Saved:", result); // ✅ Log saved recipe
+        res.status(201).json(recipe);
+      } catch (error) {
+        console.error("❌ Error creating recipe:", error); // ✅ Log error details
+        res.status(500).json({ message: "Error creating recipe", error: error.message });
+      }
     }
-);
+  );
+  
 
 // PUT update a recipe
 router.put("/:id", async (req, res) => {
@@ -61,11 +87,12 @@ router.put("/:id", async (req, res) => {
 router.put("/reorder", async (req, res) => {
     try {
         const newOrder = req.body;
-        newOrder.forEach(async (recipe, index) => {
-            await Recipe.findByIdAndUpdate(recipe._id, { order: index });
-        });
+        await Promise.all(newOrder.map((recipe, index) =>
+            Recipe.findByIdAndUpdate(recipe._id, { order: index })
+        ));
         res.json({ message: "Order updated successfully" });
     } catch (error) {
+        console.error("Error updating order:", error);
         res.status(500).json({ message: "Error updating order" });
     }
 });

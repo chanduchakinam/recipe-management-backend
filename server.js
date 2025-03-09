@@ -5,7 +5,7 @@ const cors = require("cors"); // Import cors
 require("dotenv").config();
 
 
-mongoose.connect('mongodb://localhost:27017/recipes')
+mongoose.connect('mongodb+srv://chanduchakinam:cha123@cluster0.h1daq.mongodb.net/recipeDB?retryWrites=true&w=majority&appName=Cluster0')
   .then(() => console.log("✅ Connected to Local MongoDB"))
   .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
